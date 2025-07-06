@@ -1,0 +1,39 @@
+services:
+  db:
+    build: ./db
+    container_name: prova-db
+    environment:
+      POSTGRES_USER: monitor
+      POSTGRES_PASSWORD: monitor_pass
+      POSTGRES_DB: monitor_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  agent:
+    build: ./agent
+    container_name: prova-agent
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: monitor_db
+      DB_USER: monitor
+      DB_PASSWORD: monitor_pass
+      TARGET_HOSTS: google.com,youtube.com,rnp.br
+      INTERVAL: 30
+    depends_on:
+      - db
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: prova-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
